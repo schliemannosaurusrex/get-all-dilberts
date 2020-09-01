@@ -1,0 +1,94 @@
+#!/bin/bash
+ 
+#Autor: Daniel Schliemann
+#Email: daniel.schliemann@googlemail.com
+ 
+function getAll () {
+    if [ -d dilberts ]
+        then
+            echo "Directory ./dilberts is already there."
+        else
+            echo "creating ./dilberts"
+            mkdir dilberts
+    fi
+   
+    #this is the start date because the loop does an initial ...tomorrow...
+    startDate="1989-04-15"
+    echo "Startdatum        : "$startDate
+    echo "Aktuelles Datum   : "$(date +%Y-%m-%d)
+ 
+    start_ts=$(date -d "${startDate}" '+%s')
+    end_ts=$(date '+%s')
+   
+    diffBetweenDatesInDays=$(echo "scale=0; ((( $end_ts - $start_ts )/(60*60*24)))" | bc)
+    numberOfIterations=$diffBetweenDatesInDays
+    echo "Differenz in Tagen: "$numberOfIterations
+   
+    count=1
+    actualDate=$startDate
+ 
+    until [[ $count -eq $numberOfIterations ]]
+        do
+            actualDate=$(date -d "${actualDate} tomorrow" +%Y-%m-%d)
+            if [ -s "./dilberts/$actualDate.gif" ]
+                then
+                    echo "./dilberts/$actualDate.gif already exists."
+                else
+                    echo $actualDate
+                   
+                    stripUrl="https://dilbert.com/strip/${actualDate}"
+                    echo $stripUrl
+                   
+                    actualStripUrl=$stripUrl
+                    checkIfUrlExistsAndGetDilbert $actualStripUrl $actualDate
+                    sleep 1s
+            fi
+           
+            let count+=1
+           
+            a=100
+            progress=$(echo "scale=2; (($a * $count/$numberOfIterations));" | bc)
+            echo "Progress:"$progress"%"
+        done
+}
+ 
+function checkIfUrlExistsAndGetDilbert () {
+    url=$1
+    datum=$2
+    echo $url
+    if wget $url >/dev/null 2>&1 ; then
+        echo "Url : $url exists..."
+        getDilbert $url $datum
+    else
+        echo "Url : $url doesn't exists.."
+    fi
+}
+ 
+function getDilbert () {
+    url=$1
+    datum=$2
+    wget -O temp.html $url
+   
+    rm *-*-*
+   
+    picUrlString=$(cat temp.html | grep '"image": "http://assets.amuniversal.com/')
+    echo $picUrlString
+   
+    IFS=' ' read -ra my_array <<< "$picUrlString"
+ 
+    for (( c=1; c<${#my_array[@]}; c++ ))
+        do
+            picUrlString=$(echo "${my_array[$c]}")
+            echo "URL-String: "$picUrlString
+           
+            picUrl1="https:""${picUrlString#*:}"
+            echo $picUrl1
+            picUrl2=${picUrl1::-2}
+   
+            echo "URL: "$picUrl2
+           
+            wget -O ./dilberts/$datum.gif $picUrl2
+        done
+}
+ 
+getAll
