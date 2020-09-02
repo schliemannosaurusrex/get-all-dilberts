@@ -14,15 +14,15 @@ function getAll () {
    
     #this is the start date because the loop does an initial ...tomorrow...
     startDate="1989-04-15"
-    echo "Startdatum        : "$startDate
-    echo "Aktuelles Datum   : "$(date +%Y-%m-%d)
+    echo "Start date        : "$startDate
+    echo "Current date   : "$(date +%Y-%m-%d)
  
     start_ts=$(date -d "${startDate}" '+%s')
     end_ts=$(date '+%s')
    
     diffBetweenDatesInDays=$(echo "scale=0; ((( $end_ts - $start_ts )/(60*60*24)))" | bc)
     numberOfIterations=$diffBetweenDatesInDays
-    echo "Differenz in Tagen: "$numberOfIterations
+    echo "Difference in days: "$numberOfIterations
    
     count=1
     actualDate=$startDate
