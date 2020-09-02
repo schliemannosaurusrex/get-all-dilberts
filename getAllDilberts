@@ -72,6 +72,7 @@ function getDilbert () {
     rm *-*-*
    
     picUrlString=$(cat temp.html | grep '"image": "http://assets.amuniversal.com/')
+    rm temp.html
     echo $picUrlString
    
     IFS=' ' read -ra my_array <<< "$picUrlString"
